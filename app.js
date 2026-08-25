@@ -1,56 +1,13 @@
-const chat=document.querySelector('#chat');
-const form=document.querySelector('#form');
-const input=document.querySelector('#input');
-const clearBtn=document.querySelector('#clearBtn');
-
-function addMessage(text,who='bot'){
-  const row=document.createElement('div');
-  row.className=`message ${who}`;
-  const avatar=document.createElement('div');
-  avatar.className='avatar';
-  avatar.textContent=who==='bot'?'S':'Ty';
-  const body=document.createElement('div');
-  const name=document.createElement('strong');
-  name.textContent=who==='bot'?'chatSI':'Ty';
-  const p=document.createElement('p');
-  p.textContent=text;
-  body.append(name,p);
-  row.append(avatar,body);
-  chat.appendChild(row);
-  chat.scrollTop=chat.scrollHeight;
-}
-
-async function askAI(text){
-  const response=await fetch('/api/chat',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({message:text})
-  });
-
-  const raw=await response.text();
-  let data;
-  try{data=JSON.parse(raw)}catch{
-    throw new Error(`API zwróciło nieprawidłową odpowiedź (${response.status}).`);
-  }
-  if(!response.ok)throw new Error(data.error||'Błąd serwera');
-  if(!data.reply)throw new Error('API nie zwróciło odpowiedzi AI.');
-  return data.reply;
-}
-
-form.addEventListener('submit',async e=>{
-  e.preventDefault();
-  const text=input.value.trim();
-  if(!text)return;
-  addMessage(text,'user');
-  input.value='';
-  input.disabled=true;
-  try{addMessage(await askAI(text),'bot')}
-  catch(err){addMessage(`Błąd: ${err.message}`,'bot')}
-  finally{input.disabled=false;input.focus()}
-});
-
-clearBtn.addEventListener('click',()=>{
-  chat.innerHTML='';
-  addMessage('Nowa rozmowa rozpoczęta. 🚀','bot');
-  input.focus();
-});
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const hpEl=document.getElementById('hp'),ammoEl=document.getElementById('ammo'),scoreEl=document.getElementById('score'),timeEl=document.getElementById('time'),waveEl=document.getElementById('wave'),msg=document.getElementById('message');
+let W,H,running=false,hp=100,ammo=30,score=0,startTime,spawnTimer=0,wave=1,last=0;const keys={};let player={x:0,y:0,a:0},zombies=[];
+function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}addEventListener('resize',resize);resize();
+addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+canvas.addEventListener('mousemove',e=>{if(running&&document.pointerLockElement===canvas)player.a+=e.movementX*.003});
+canvas.addEventListener('click',()=>{if(running){canvas.requestPointerLock();shoot()}});
+document.getElementById('start').onclick=()=>{msg.style.display='none';reset();canvas.requestPointerLock()};
+function reset(){hp=100;ammo=30;score=0;wave=1;zombies=[];player={x:0,y:0,a:0};startTime=performance.now();running=true;last=performance.now();requestAnimationFrame(loop)}
+function shoot(){if(ammo<=0)return;ammo--;for(const z of zombies){const dx=z.x-player.x,dy=z.y-player.y,d=Math.hypot(dx,dy),ang=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(ang-player.a),Math.cos(ang-player.a));if(d<900&&Math.abs(diff)<.12){z.hp--;if(z.hp<=0){zombies.splice(zombies.indexOf(z),1);score+=10}break}}}
+function spawn(){const a=Math.random()*Math.PI*2,d=500+Math.random()*700;zombies.push({x:player.x+Math.cos(a)*d,y:player.y+Math.sin(a)*d,hp:1,speed:25+wave*3})}
+function loop(t){if(!running)return;const dt=Math.min((t-last)/1000,.05);last=t;const sp=150*dt;let dx=0,dy=0;if(keys.w)dy+=1;if(keys.s)dy-=1;if(keys.a)dx-=1;if(keys.d)dx+=1;const ca=Math.cos(player.a),sa=Math.sin(player.a);player.x+=(dx*ca+dy*sa)*sp;player.y+=(dy*ca-dx*sa)*sp;spawnTimer-=dt;if(spawnTimer<=0){spawn();spawnTimer=Math.max(.35,1.5-wave*.08)}wave=Math.floor((t-startTime)/30000)+1;for(const z of zombies){const zx=player.x-z.x,zy=player.y-z.y,d=Math.hypot(zx,zy)||1;z.x+=zx/d*z.speed*dt;z.y+=zy/d*z.speed*dt;if(d<35)hp-=12*dt}if(hp<=0){running=false;document.exitPointerLock();msg.style.display='block';msg.querySelector('h1').textContent='💀 KONIEC GRY';msg.querySelector('p').textContent=`Wynik: ${score} • Czas: ${Math.floor((t-startTime)/1000)} s`;document.getElementById('start').textContent='ZAGRAJ PONOWNIE'}draw();hpEl.textContent=Math.max(0,Math.floor(hp));ammoEl.textContent=ammo;scoreEl.textContent=score;timeEl.textContent=Math.floor((t-startTime)/1000);waveEl.textContent='FALA '+wave;requestAnimationFrame(loop)}
+function draw(){ctx.fillStyle='#10151b';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2,H/2);ctx.fillStyle='#1b242c';for(let x=-W;x<W;x+=80)ctx.fillRect(x,-H,2,H*2);for(let y=-H;y<H;y+=80)ctx.fillRect(-W,y,W*2,2);ctx.restore();for(const z of zombies){const dx=z.x-player.x,dy=z.y-player.y,d=Math.hypot(dx,dy),rel=Math.atan2(Math.sin(Math.atan2(dy,dx)-player.a),Math.cos(Math.atan2(dy,dx)-player.a));if(Math.abs(rel)<1.15){const sx=W/2+Math.tan(rel)*400,sy=H/2,size=Math.max(18,600/d*120);ctx.fillStyle='#4caf50';ctx.fillRect(sx-size/2,sy-size,size,size*1.6);ctx.fillStyle='#111';ctx.fillRect(sx-size*.25,sy-size*.7,size*.12,size*.12);ctx.fillRect(sx+size*.13,sy-size*.7,size*.12,size*.12)}}ctx.fillStyle='#222';ctx.fillRect(W/2-90,H-80,180,80);ctx.fillStyle='#555';ctx.fillRect(W/2-12,H-170,24,100);ctx.fillStyle='#ddd';ctx.fillRect(W/2-3,H-170,6,80)}
