@@ -1,20 +1,26 @@
-# chatSI 🤖
+# 🧟 Zombie Escape
 
-Własny projekt AI rozwijany przez Animowego Użytkownika.
+## 🎮 Gra FPS Zombie Survival
 
-## Cel projektu
+**Cel:** przetrwaj jak najdłużej, uciekaj przed hordą zombie i strzelaj tylko wtedy, gdy musisz.
 
-chatSI ma być własnym asystentem AI, którego będziemy rozwijać krok po kroku.
+### Sterowanie
+- **WASD** - ruch
+- **Mysz** - celowanie
+- **LPM** - strzał
+- **R** - przeładowanie
 
-### Plan
-- [ ] Podstawowy interfejs rozmowy
-- [ ] Silnik odpowiedzi AI
-- [ ] Pamięć rozmów
-- [ ] Osobowość chatSI
-- [ ] System konfiguracji
-- [ ] Historia rozmów
-- [ ] Bezpieczne przechowywanie kluczy API
-- [ ] Rozbudowa o kolejne funkcje
+### Plan gry
+- [x] Projekt gry
+- [x] Ekran startowy
+- [ ] FPS i mapa
+- [ ] Zombie AI
+- [ ] Broń i amunicja
+- [ ] Loot
+- [ ] Wieżyczki AI
+- [ ] Barykady
+- [ ] Fale zombie
+- [ ] Tryb online 1-4 graczy
+- [ ] Bossowie i mutanty
 
-## Status
-🚧 Projekt w budowie.
+Projekt rozwijamy bez płatnego API. 🤝
