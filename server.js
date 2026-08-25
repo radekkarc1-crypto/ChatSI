@@ -1,14 +1,32 @@
 import express from 'express';
-import {chat} from './ai.js';
+import { chat } from './ai.js';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const app=express();
-app.use(express.json({limit:'1mb'}));
+const app = express();
+app.use(express.json({ limit: '1mb' }));
 
-const page=`<!doctype html><html lang="pl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>chatSI</title><style>*{box-sizing:border-box}body{margin:0;background:#0b1020;color:#eef2ff;font-family:system-ui,Arial;min-height:100vh}.app{max-width:1000px;height:100vh;margin:auto;background:#10172b;display:flex;flex-direction:column}.top{padding:18px 22px;border-bottom:1px solid #29334e;display:flex;justify-content:space-between;align-items:center}.brand{display:flex;gap:12px;align-items:center}.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#725cff,#20d6c7);display:grid;place-items:center;font-weight:900;font-size:22px}.brand h1{margin:0;font-size:20px}.brand small{color:#8d98b5}.new{background:transparent;color:#d7def2;border:1px solid #34405d;border-radius:10px;padding:10px 14px;cursor:pointer}.chat{flex:1;overflow:auto;padding:28px 20px}.msg{display:flex;gap:12px;max-width:780px;margin:0 auto 22px}.avatar{width:34px;height:34px;flex:none;border-radius:10px;background:#293452;display:grid;place-items:center;font-weight:800}.msg p{margin:5px 0;line-height:1.55;color:#d7deef;white-space:pre-wrap}.user{justify-content:flex-end}.user .avatar{order:2;background:#5645ae}.user>div:nth-child(2){text-align:right}.composer{display:flex;gap:10px;padding:15px 20px;border-top:1px solid #29334e}.composer input{flex:1;background:#0c1325;border:1px solid #34405d;color:white;border-radius:12px;padding:14px;outline:none}.composer button{border:0;background:#6c59ed;color:white;border-radius:12px;padding:0 20px;font-weight:700;cursor:pointer}footer{text-align:center;color:#65708c;font-size:11px;padding:8px}@media(max-width:600px){.new{font-size:11px}.composer button{padding:0 13px}}</style></head><body><main class="app"><header class="top"><div class="brand"><span class="logo">S</span><div><h1>chatSI</h1><small>Twój własny asystent AI</small></div></div><button class="new" id="new">Nowa rozmowa</button></header><section class="chat" id="chat"><div class="msg"><div class="avatar">S</div><div><strong>chatSI</strong><p>Cześć! Jestem chatSI. 🤖 Jestem gotowy na test.</p></div></div></section><form class="composer" id="form"><input id="input" autocomplete="off" placeholder="Napisz wiadomość do chatSI..."><button>Wyślij ➤</button></form><footer>chatSI • własny projekt AI</footer></main><script>const chat=document.querySelector('#chat'),form=document.querySelector('#form'),input=document.querySelector('#input');function add(t,u=false){const r=document.createElement('div');r.className='msg '+(u?'user':'');r.innerHTML='<div class="avatar">'+(u?'Ty':'S')+'</div><div><strong>'+(u?'Ty':'chatSI')+'</strong><p></p></div>';r.querySelector('p').textContent=t;chat.append(r);chat.scrollTop=chat.scrollHeight}form.onsubmit=async e=>{e.preventDefault();const t=input.value.trim();if(!t)return;add(t,true);input.value='';input.disabled=true;try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:t})});const d=await r.json();if(!r.ok)throw Error(d.error||'Błąd API');add(d.reply)}catch(x){add('Błąd: '+x.message)}finally{input.disabled=false;input.focus()}};document.querySelector('#new').onclick=()=>{chat.innerHTML='';add('Nowa rozmowa rozpoczęta. 🚀');input.focus()}</script></body></html>`;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(__dirname));
 
-app.get('/',(req,res)=>res.type('html').send(page));
-app.get('/api/status',(req,res)=>res.json({name:'chatSI',status:'online',model:process.env.OPENAI_MODEL||'gpt-5.6-luna'}));
-app.post('/api/chat',async(req,res)=>{try{const reply=await chat(req.body?.message);res.json({reply})}catch(error){res.status(500).json({error:error.message||'Błąd AI'})}});
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
-const PORT=process.env.PORT||3000;
-app.listen(PORT,()=>console.log(`chatSI działa na porcie ${PORT}`));
+app.get('/api/status', (req, res) => {
+  res.json({ name: 'chatSI', status: 'online' });
+});
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const reply = await chat(req.body?.message);
+    res.json({ reply });
+  } catch (error) {
+    res.status(500).json({ error: error.message || 'Błąd AI' });
+  }
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Zombie Escape działa na porcie ${PORT}`));
