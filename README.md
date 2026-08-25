@@ -1,6 +1,6 @@
 # chatSI 🤖
 
-Własny projekt AI rozwijany przez Dawida.
+Własny projekt AI rozwijany przez Animowego Użytkownika.
 
 ## Cel projektu
 
