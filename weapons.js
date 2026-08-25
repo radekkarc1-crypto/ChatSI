@@ -1,0 +1,8 @@
+const weaponSet={1:{name:'PISTOLET',mag:30,reload:1.2,damage:1,spread:.12,cool:.22,pellets:1},2:{name:'STRZELBA',mag:8,reload:1.5,damage:2,spread:.28,cool:.65,pellets:6},3:{name:'KARABIN',mag:45,reload:1.8,damage:1,spread:.08,cool:.1,pellets:1}};
+let currentWeapon='1',weaponCooldown=0;
+addEventListener('keydown',e=>{if(running&&weaponSet[e.key]){currentWeapon=e.key;ammo=weaponSet[currentWeapon].mag;maxAmmo=ammo;reloading=false;const w=document.getElementById('weapon');if(w)w.textContent=weaponSet[currentWeapon].name}});
+const baseReload=reload;
+reload=function(){if(!running||reloading||ammo===maxAmmo)return;reloading=true;reloadTimer=weaponSet[currentWeapon].reload};
+const baseShoot=shoot;
+shoot=function(){const w=weaponSet[currentWeapon];if(!running||reloading||weaponCooldown>0)return;if(ammo<=0){reload();return}ammo--;weaponCooldown=w.cool;for(let p=0;p<w.pellets;p++){let best=null,bd=Infinity;for(const z of zombies){const dx=z.x-player.x,dy=z.y-player.y,d=Math.hypot(dx,dy),ang=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(ang-player.a),Math.cos(ang-player.a))+(Math.random()-.5)*w.spread;if(d<900&&Math.abs(diff)<.13&&d<bd){bd=d;best=z}}if(best){z.hp-=w.damage;if(z.hp<=0){zombies.splice(zombies.indexOf(best),1);score+=best.type==='tank'?30:best.type==='runner'?15:10;if(Math.random()<.2)dropLoot(best.x,best.y)}}}};
+setInterval(()=>{if(typeof running!=='undefined'&&running)weaponCooldown=Math.max(0,weaponCooldown-.05)},50);
