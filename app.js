@@ -1,12 +1,13 @@
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
 const hpEl=document.getElementById('hp'),ammoEl=document.getElementById('ammo'),scoreEl=document.getElementById('score'),timeEl=document.getElementById('time'),waveEl=document.getElementById('wave'),msg=document.getElementById('message');
-let W,H,running=false,hp=100,ammo=30,maxAmmo=30,score=0,startTime=0,spawnTimer=0,wave=1,last=0,reloading=false,reloadTimer=0;const keys={};let player={x:0,y:0,a:0},zombies=[],turrets=[],loot=[],medkits=[];
+let W,H,running=false,hp=100,ammo=30,maxAmmo=30,score=0,startTime=0,spawnTimer=0,wave=1,last=0,reloading=false,reloadTimer=0;const keys={};let player={x:0,y:0,a:0},zombies=[],turrets=[],loot=[];
 function resize(){W=canvas.width=innerWidth;H=canvas.height=innerHeight}addEventListener('resize',resize);resize();
 addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key.toLowerCase()==='r')reload();if(e.key.toLowerCase()==='t')placeTurret()});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 canvas.addEventListener('mousemove',e=>{if(running&&document.pointerLockElement===canvas)player.a+=e.movementX*.003});canvas.addEventListener('click',()=>{if(running){canvas.requestPointerLock();shoot()}});
 document.getElementById('start').onclick=()=>{msg.style.display='none';reset();canvas.requestPointerLock()};
-function reset(){hp=100;ammo=30;score=0;wave=1;zombies=[];turrets=[];loot=[];medkits=[];player={x:0,y:0,a:0};startTime=performance.now();running=true;last=startTime;reloading=false;requestAnimationFrame(loop)}
-function reload(){if(!running||reloading||ammo===maxAmmo)return;reloading=true;reloadTimer=1.2}function placeTurret(){if(!running||turrets.length>=3)return;turrets.push({x:player.x+Math.cos(player.a)*55,y:player.y+Math.sin(player.a)*55,cool:0,life:60})}
+function reset(){hp=100;ammo=30;score=0;wave=1;zombies=[];turrets=[];loot=[];player={x:0,y:0,a:0};startTime=performance.now();running=true;last=startTime;reloading=false;spawnTimer=0;requestAnimationFrame(loop)}
+function reload(){if(!running||reloading||ammo===maxAmmo)return;reloading=true;reloadTimer=1.2}
+function placeTurret(){if(!running||turrets.length>=3)return;turrets.push({x:player.x+Math.cos(player.a)*55,y:player.y+Math.sin(player.a)*55,cool:0,life:60})}
 function dropLoot(x,y){loot.push({x,y,type:Math.random()<.6?'ammo':'med',life:35})}
 function kill(z){const i=zombies.indexOf(z);if(i<0)return;zombies.splice(i,1);score+=z.type==='tank'?30:z.type==='runner'?15:10;if(Math.random()<.25)dropLoot(z.x,z.y)}
 function shoot(){if(reloading)return;if(ammo<=0){reload();return}ammo--;let best=null,bestD=Infinity;for(const z of zombies){const dx=z.x-player.x,dy=z.y-player.y,d=Math.hypot(dx,dy),ang=Math.atan2(dy,dx),diff=Math.atan2(Math.sin(ang-player.a),Math.cos(ang-player.a));if(d<950&&Math.abs(diff)<.11&&d<bestD){best=z;bestD=d}}if(best){best.hp--;if(best.hp<=0)kill(best)}}
