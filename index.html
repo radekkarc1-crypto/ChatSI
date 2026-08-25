@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chatSI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand"><span class="logo">S</span><div><h1>chatSI</h1><small>Twój własny asystent AI</small></div></div>
+      <button id="clearBtn" class="ghost">Nowa rozmowa</button>
+    </header>
+    <section id="chat" class="chat" aria-live="polite">
+      <div class="message bot"><div class="avatar">S</div><div><strong>chatSI</strong><p>Cześć! Jestem chatSI. 🚀 Na razie działam w trybie demonstracyjnym. Zaraz wyposażymy mnie w prawdziwy silnik AI.</p></div></div>
+    </section>
+    <form id="form" class="composer">
+      <input id="input" autocomplete="off" placeholder="Napisz wiadomość do chatSI...">
+      <button type="submit">Wyślij ➤</button>
+    </form>
+    <footer>chatSI • projekt własnego AI</footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
